@@ -36,3 +36,9 @@ To connect to your WebSocket server, modify the `url` in the `connectWebSocket` 
 javascript
 const url = 'wss://example.com/ws/chat'; // Change this to your WebSocket server URL
 
+
+## Video Demonstration
+
+
+https://github.com/pramod-12345/websocket_app/assets/102239873/a86913ae-db69-44fa-bc18-94b38c2c1e69
+
