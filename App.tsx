@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Alert } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { GiftedChat, Day } from 'react-native-gifted-chat';
 
 const WebsocketChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -71,12 +71,33 @@ const WebsocketChatScreen = () => {
     }
   }, [ws]);
 
+  const renderDay = (props) => {
+    return (
+      <View style={{ alignItems: 'center', marginTop: 10, marginBottom: 5 }}>
+        <Day
+          {...props}
+          textStyle={{
+            color: '#666',
+            fontSize: 12,
+            fontWeight: 'bold',
+            backgroundColor: '#f0f0f0',
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 15,
+          }}
+        />
+      </View>
+    );
+  };
+
+
   return (
     <View style={{ flex: 1 }}>
       <GiftedChat
         messages={messages}
         onSend={onSend}
         user={{ _id: 1 }}
+        renderDay={renderDay}
       />
     </View>
   );
