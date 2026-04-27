@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Alert } from 'react-native';
 import { GiftedChat, Day } from 'react-native-gifted-chat';
 
 const WebsocketChatScreen = () => {
   const [messages, setMessages] = useState([]);
-  const [ws, setWs] = useState(null);
+  const ws = useRef(null);
+  const isMounted = useRef(true);
 
   // Function to establish WebSocket connection
   const connectWebSocket = useCallback(() => {
@@ -39,28 +40,32 @@ const WebsocketChatScreen = () => {
     socket.onclose = (event) => {
       console.log('WebSocket closed:', event.code, event.reason);
       Alert.alert('Disconnected', `Chat disconnected: ${event.reason || 'Unknown reason'}`);
-      // Attempt to reconnect after a delay
-      setTimeout(connectWebSocket, 5000);
+      // Attempt to reconnect after a delay if still mounted
+      if (isMounted.current) {
+        setTimeout(connectWebSocket, 5000);
+      }
     };
 
-    setWs(socket);
+    ws.current = socket;
   }, []);
 
   useEffect(() => {
+    isMounted.current = true;
     connectWebSocket();
     return () => {
-      if (ws) {
+      isMounted.current = false;
+      if (ws.current) {
         console.log('Closing WebSocket connection');
-        ws.close();
+        ws.current.close();
       }
     };
   }, [connectWebSocket]);
 
   const onSend = useCallback((newMessages = []) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    if (ws && ws.readyState === WebSocket.OPEN) {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
-        ws.send(JSON.stringify({ message: newMessages[0].text }));
+        ws.current.send(JSON.stringify({ message: newMessages[0].text }));
       } catch (error) {
         console.error('Error sending message:', error);
         Alert.alert('Send Error', 'Failed to send message');
@@ -69,9 +74,9 @@ const WebsocketChatScreen = () => {
       console.warn('WebSocket is not open. Message not sent.');
       Alert.alert('Not Connected', 'Unable to send message. Please try again.');
     }
-  }, [ws]);
+  }, []);
 
-  const renderDay = (props) => {
+  const renderDay = useCallback((props) => {
     return (
       <View style={{ alignItems: 'center', marginTop: 10, marginBottom: 5 }}>
         <Day
@@ -88,7 +93,7 @@ const WebsocketChatScreen = () => {
         />
       </View>
     );
-  };
+  }, []);
 
 
   return (
